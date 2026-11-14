@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: Synthetic source-system extracts loaded by warehouse/load_raw.py
+    tables:
+      - name: entities
+      - name: accounts
+      - name: cost_centers
+      - name: fx_rates
+      - name: budget_fx_rates
+      - name: customers
+      - name: invoices
+      - name: payments
+      - name: gl_entries
+      - name: budgets
+      - name: bank_statements

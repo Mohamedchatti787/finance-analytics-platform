@@ -1,0 +1,14 @@
+# No credentials: the warehouse is a local DuckDB file. Run dbt from the repo
+# root with:  dbt build --profiles-dir .
+finance_platform:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: warehouse/finance.duckdb
+      threads: 2
+    # used only by tests/test_controls_have_teeth.py (works on a throwaway copy)
+    mutation:
+      type: duckdb
+      path: warehouse/mutation.duckdb
+      threads: 2

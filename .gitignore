@@ -1,0 +1,21 @@
+# generated data and warehouse (rebuilt in ~1 minute with: python run_pipeline.py)
+data/raw/
+warehouse/*.duckdb
+warehouse/*.duckdb.wal
+export/powerbi_export/
+target/
+dbt_packages/
+logs/
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+# Power BI working files (commit the .pbix deliberately if you want to share it)
+*.pbix.bak
+
+# dbt local state
+.user.yml
+
+*.pbix

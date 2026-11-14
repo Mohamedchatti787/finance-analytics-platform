@@ -1,0 +1,33 @@
+kpi_id,description,filter_context,expected_value,tolerance,source
+rev_fy_total,"Revenue, EUR (monthly average rates)","FY2025, all entities",91123481.19455302,5.0,independent
+cogs_fy_total,"Cost of goods sold, EUR","FY2025, all entities",35296788.23079718,5.0,independent
+gross_margin_pct_fy,Gross margin %,"FY2025, all entities",0.6126488170986704,1e-05,independent
+opex_fy_total,"Operating expenses incl. depreciation, EUR","FY2025, all entities",39455541.214404315,5.0,independent
+operating_income_fy_total,"Operating income, EUR","FY2025, all entities",16371151.749351524,5.0,independent
+ebitda_fy_total,"EBITDA (operating income + depreciation), EUR","FY2025, all entities",16970884.102198962,5.0,independent
+rev_fy_E01,"Revenue, EUR","FY2025, entity E01",21351195.71,5.0,independent
+rev_fy_E02,"Revenue, EUR","FY2025, entity E02",17553722.83,5.0,independent
+rev_fy_E03,"Revenue, EUR","FY2025, entity E03",10713326.94574695,5.0,independent
+rev_fy_E04,"Revenue, EUR","FY2025, entity E04",25228654.999923877,5.0,independent
+rev_fy_E05,"Revenue, EUR","FY2025, entity E05",16276580.70888219,5.0,independent
+budget_eur_fy_total_revenue,"Budgeted revenue, EUR (budget rates)","FY2025, all entities",91279320.70573634,5.0,independent
+favourable_variance_fy_total,"Favourable (+) / unfavourable (-) P&L variance vs budget, EUR","FY2025, all entities",-1617131.7597634608,5.0,independent
+favourable_operational_fy_total,"Operational part of the profit variance, EUR (+ = good for profit)","FY2025, all entities",-1710388.2094809103,5.0,independent
+favourable_fx_fy_total,"FX part of the profit variance, EUR (+ = good for profit)","FY2025, all entities",93256.44971745009,5.0,independent
+ar_balance_eur_total,"Open receivables, EUR (month-end rate)","2025-12-31, all entities",16537298.560942661,5.0,independent
+ar_over_90_eur_total,"Receivables more than 90 days past due, EUR","2025-12-31, all entities",2777469.89870723,5.0,independent
+ar_over_90_pct,Share of receivables more than 90 days past due,"2025-12-31, all entities",0.1679518506890226,1e-05,independent
+dso_E01,Days sales outstanding (90-day window),"2025-12-31, entity E01",62.6,0.06,independent
+dso_E02,Days sales outstanding (90-day window),"2025-12-31, entity E02",56.1,0.06,independent
+dso_E03,Days sales outstanding (90-day window),"2025-12-31, entity E03",73.3,0.06,independent
+dso_E04,Days sales outstanding (90-day window),"2025-12-31, entity E04",61.8,0.06,independent
+dso_E05,Days sales outstanding (90-day window),"2025-12-31, entity E05",61.5,0.06,independent
+unbalanced_journals,Journals quarantined for debits <> credits,all periods,12.0,0.0,independent
+unbalanced_abs_difference_cents,"Total absolute out-of-balance amount, cents",all periods,39271.0,0.0,independent
+bank_match_rate,Share of bank lines matched to the ledger,"all periods, all entities",0.9903099734290436,1e-06,platform output (not independent)
+ledger_match_rate,Share of ledger cash lines matched to the bank,"all periods, all entities",0.9843838692573995,1e-06,platform output (not independent)
+review_queue_matches,Matches flagged for human review (tier 4c),all periods,375.0,0.0,platform output (not independent)
+variance_alert_rows,Rows flagged is_alert in the variance alert mart,all periods,56.0,0.0,platform output (not independent)
+cash_forecast_13w_eur,"Forecast collections over the next 13 weeks, EUR","origin 2025-12-31, all entities",13384512.675882159,5.0,platform output (not independent)
+backtest_wape_model,"Weekly forecast error (WAPE), model","all backtest origins, all entities",0.14402314920698564,1e-06,platform output (not independent)
+backtest_wape_baseline,"Weekly forecast error (WAPE), naive baseline","all backtest origins, all entities",0.6171818083472419,1e-06,platform output (not independent)

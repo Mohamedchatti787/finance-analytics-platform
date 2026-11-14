@@ -1,0 +1,245 @@
+// =====================================================================================
+//  Finance Analytics Platform - DAX measures
+//
+//  STATUS: written against the real exported column names (a test in this repo checks
+//  that every Table[column] below exists) but NOT executed in Power BI Desktop - it is a
+//  Windows-only tool and could not be run where this project was built. Validate each
+//  measure against docs/powerbi/validation.md before trusting it.
+//
+//  Setup: create an empty table called "_Measures" (Home > Enter data) and add these
+//  measures to it. Mark dim_date as the date table (key: date_key) and DISABLE
+//  "Auto date/time" in Options > Current file > Data load.
+//
+//  Conventions
+//   - Amounts in EUR: P&L at the month's AVERAGE rate, balances at the MONTH-END rate.
+//   - "Natural sign": revenue is positive, costs are positive. Variances are in PROFIT
+//     terms: positive = good for profit (revenue above budget OR cost below budget).
+//   - Snapshot measures (cash, receivables, DSO) capture the period end in a VAR first.
+//     Calling a measure inside FILTER() would trigger context transition and return the
+//     wrong date - that is a classic DAX bug.
+// =====================================================================================
+
+// ---------------------------------------------------------------- [Time helpers]
+Period End In Context =
+EOMONTH ( MAX ( dim_date[date_key] ), 0 )
+
+// ---------------------------------------------------------------- [P&L - actuals]
+Revenue =
+CALCULATE ( SUM ( fct_trial_balance[activity_natural_eur] ), dim_account[account_type] = "REVENUE" )
+
+COGS =
+CALCULATE ( SUM ( fct_trial_balance[activity_natural_eur] ), dim_account[account_type] = "COGS" )
+
+Gross Profit =
+[Revenue] - [COGS]
+
+Gross Margin % =
+DIVIDE ( [Gross Profit], [Revenue] )
+
+Operating Expenses =
+CALCULATE ( SUM ( fct_trial_balance[activity_natural_eur] ), dim_account[account_type] = "OPEX" )
+
+Operating Income =
+[Gross Profit] - [Operating Expenses]
+
+Operating Margin % =
+DIVIDE ( [Operating Income], [Revenue] )
+
+Depreciation =
+CALCULATE ( SUM ( fct_trial_balance[activity_natural_eur] ), fct_trial_balance[account_id] = 6500 )
+
+EBITDA =
+[Operating Income] + [Depreciation]
+
+Revenue YTD =
+TOTALYTD ( [Revenue], dim_date[date_key] )
+
+Operating Income YTD =
+TOTALYTD ( [Operating Income], dim_date[date_key] )
+
+Revenue PY =
+CALCULATE ( [Revenue], SAMEPERIODLASTYEAR ( dim_date[date_key] ) )
+
+Revenue YoY % =
+DIVIDE ( [Revenue] - [Revenue PY], [Revenue PY] )
+
+// ---------------------------------------------------------------- [Budget]
+Budget Revenue =
+CALCULATE ( SUM ( fct_budget_variance[budget_eur] ), dim_account[account_type] = "REVENUE" )
+
+Budget COGS =
+CALCULATE ( SUM ( fct_budget_variance[budget_eur] ), dim_account[account_type] = "COGS" )
+
+Budget Operating Expenses =
+CALCULATE ( SUM ( fct_budget_variance[budget_eur] ), dim_account[account_type] = "OPEX" )
+
+Budget Operating Income =
+[Budget Revenue] - [Budget COGS] - [Budget Operating Expenses]
+
+// ---------------------------------------------------------------- [Variance]
+Revenue Variance % =
+DIVIDE ( [Revenue] - [Budget Revenue], [Budget Revenue] )
+
+Operating Income Variance =
+[Operating Income] - [Budget Operating Income]
+
+Favourable Variance (Profit) =
+SUM ( fct_budget_variance[favourable_variance_eur] )
+
+Operational Variance (Profit) =
+SUM ( fct_budget_variance[favourable_operational_eur] )
+
+FX Impact (Profit) =
+SUM ( fct_budget_variance[favourable_fx_eur] )
+
+// Helper table for a budget -> actual bridge (waterfall chart). Create via Modeling > New table.
+Variance Bridge =
+DATATABLE (
+    "Step", STRING,
+    "Order", INTEGER,
+    { { "Budget operating income", 1 }, { "Operational variance", 2 }, { "FX impact", 3 }, { "Actual operating income", 4 } }
+)
+
+Bridge Value =
+SWITCH (
+    SELECTEDVALUE ( 'Variance Bridge'[Order] ),
+    1, [Budget Operating Income],
+    2, [Operational Variance (Profit)],
+    3, [FX Impact (Profit)],
+    4, [Operating Income]
+)
+
+// ---------------------------------------------------------------- [Variance alerts]
+Variance Alerts =
+CALCULATE ( COUNTROWS ( fct_variance_alerts ), fct_variance_alerts[is_alert] = TRUE () )
+
+Unfavourable Alerts =
+CALCULATE ( [Variance Alerts], fct_variance_alerts[direction] = "Unfavourable" )
+
+Peak Robust Z =
+CALCULATE (
+    MAXX ( fct_variance_alerts, ABS ( fct_variance_alerts[robust_z] ) ),
+    fct_variance_alerts[is_alert] = TRUE ()
+)
+
+// ---------------------------------------------------------------- [Balance sheet & cash]
+Cash Balance (EUR) =
+VAR pe = [Period End In Context]
+RETURN
+    CALCULATE (
+        SUM ( fct_trial_balance[closing_balance_eur] ),
+        fct_trial_balance[account_id] = 1010,
+        FILTER ( ALL ( dim_date[date_key] ), dim_date[date_key] = pe )
+    )
+
+// ---------------------------------------------------------------- [Receivables]
+AR Balance (EUR) =
+VAR pe = [Period End In Context]
+RETURN
+    CALCULATE ( SUM ( fct_ar_aging[balance_eur] ), FILTER ( ALL ( dim_date[date_key] ), dim_date[date_key] = pe ) )
+
+AR Over 90 (EUR) =
+VAR pe = [Period End In Context]
+RETURN
+    CALCULATE (
+        SUM ( fct_ar_aging[balance_eur] ),
+        fct_ar_aging[aging_bucket] = "4 90+",
+        FILTER ( ALL ( dim_date[date_key] ), dim_date[date_key] = pe )
+    )
+
+AR Over 90 % =
+DIVIDE ( [AR Over 90 (EUR)], [AR Balance (EUR)] )
+
+Overdue AR (EUR) =
+VAR pe = [Period End In Context]
+RETURN
+    CALCULATE (
+        SUM ( fct_ar_aging[balance_eur] ),
+        fct_ar_aging[aging_bucket] <> "0 Current",
+        FILTER ( ALL ( dim_date[date_key] ), dim_date[date_key] = pe )
+    )
+
+// Weighted across entities: sum of AR over sum of invoiced, times the 90-day window.
+// (Months before March 2023 have a shorter window in the data and are not meaningful.)
+DSO (days) =
+VAR pe = [Period End In Context]
+VAR ar =
+    CALCULATE ( SUM ( fct_dso[ar_balance_eur] ), FILTER ( ALL ( dim_date[date_key] ), dim_date[date_key] = pe ) )
+VAR inv =
+    CALCULATE ( SUM ( fct_dso[invoiced_window_eur] ), FILTER ( ALL ( dim_date[date_key] ), dim_date[date_key] = pe ) )
+RETURN
+    DIVIDE ( ar, inv ) * 90
+
+// ---------------------------------------------------------------- [Ledger controls]
+Ledger Lines =
+COUNTROWS ( fct_gl )
+
+Journal Exceptions =
+COUNTROWS ( fct_journal_exceptions )
+
+Journal Exceptions (EUR) =
+SUM ( fct_journal_exceptions[abs_difference_eur] )
+
+// Validation only: local currencies are summed, so this is not a reporting figure.
+Journal Exceptions Abs Difference (LC cents) =
+SUM ( fct_journal_exceptions[abs_difference_lc] ) * 100
+
+// ---------------------------------------------------------------- [Bank reconciliation]
+Bank Lines =
+SUM ( fct_bank_recon_summary[bank_lines] )
+
+Bank Lines Matched =
+SUM ( fct_bank_recon_summary[bank_matched_lines] )
+
+Bank Match Rate =
+DIVIDE ( [Bank Lines Matched], [Bank Lines] )
+
+Ledger Cash Lines =
+SUM ( fct_bank_recon_summary[gl_cash_lines] )
+
+Ledger Lines Matched =
+SUM ( fct_bank_recon_summary[gl_matched_lines] )
+
+Ledger Match Rate =
+DIVIDE ( [Ledger Lines Matched], [Ledger Cash Lines] )
+
+Review Queue =
+CALCULATE ( COUNTROWS ( fct_bank_recon_matches ), fct_bank_recon_matches[review_required] = TRUE () )
+
+Unmatched Bank Value (EUR) =
+SUM ( fct_bank_recon_summary[unmatched_bank_value_eur] )
+
+Unmatched Ledger Value (EUR) =
+SUM ( fct_bank_recon_summary[unmatched_gl_value_eur] )
+
+Unmatched Items =
+COUNTROWS ( fct_bank_recon_unmatched )
+
+Items Needing Investigation =
+CALCULATE (
+    COUNTROWS ( fct_bank_recon_unmatched ),
+    fct_bank_recon_unmatched[category] IN { "Unmatched - investigate", "Unidentified bank item" }
+)
+
+// Control: must be 0.00 for every entity - the bank-to-ledger statement foots exactly.
+Recon Unexplained (max abs, LC) =
+MAXX ( fct_bank_recon_statement, ABS ( fct_bank_recon_statement[unexplained_lc] ) )
+
+// ---------------------------------------------------------------- [Cash forecast]
+Forecast Collections (EUR) =
+SUM ( fct_cash_forecast[predicted_eur] )
+
+Backtest Actual Collected (EUR) =
+SUM ( fct_cash_forecast_backtest[actual_eur] )
+
+Backtest WAPE (Model) =
+DIVIDE (
+    SUMX ( fct_cash_forecast_backtest, ABS ( fct_cash_forecast_backtest[predicted_eur] - fct_cash_forecast_backtest[actual_eur] ) ),
+    SUM ( fct_cash_forecast_backtest[actual_eur] )
+)
+
+Backtest WAPE (Baseline) =
+DIVIDE (
+    SUMX ( fct_cash_forecast_backtest, ABS ( fct_cash_forecast_backtest[baseline_eur] - fct_cash_forecast_backtest[actual_eur] ) ),
+    SUM ( fct_cash_forecast_backtest[actual_eur] )
+)

@@ -1,0 +1,102 @@
+version: 2
+
+models:
+  - name: stg_entities
+    columns:
+      - name: entity_id
+        data_tests: [unique, not_null]
+      - name: currency
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['EUR', 'USD', 'TND']
+
+  - name: stg_accounts
+    columns:
+      - name: account_id
+        data_tests: [unique, not_null]
+      - name: normal_balance
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['D', 'C']
+      - name: statement
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['BS', 'PL']
+
+  - name: stg_cost_centers
+    columns:
+      - name: cost_center_id
+        data_tests: [unique, not_null]
+
+  - name: stg_customers
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: entity_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_entities')
+                field: entity_id
+
+  - name: stg_invoices
+    description: AR subledger - one row per sales invoice (local currency).
+    columns:
+      - name: invoice_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+  - name: stg_payments
+    columns:
+      - name: payment_id
+        data_tests: [unique, not_null]
+      - name: invoice_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_invoices')
+                field: invoice_id
+
+  - name: stg_gl_entries
+    description: Raw ledger lines, including journals that fail the balance check.
+    columns:
+      - name: gl_line_id
+        data_tests: [unique, not_null]
+      - name: journal_id
+        data_tests: [not_null]
+      - name: account_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: cost_center_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_cost_centers')
+                field: cost_center_id
+
+  - name: stg_budgets
+    columns:
+      - name: account_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+
+  - name: stg_bank_statements
+    columns:
+      - name: bank_line_id
+        data_tests: [unique, not_null]

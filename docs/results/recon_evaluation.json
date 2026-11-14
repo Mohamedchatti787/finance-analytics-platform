@@ -1,0 +1,55 @@
+{
+  "true_pairs": 316328,
+  "predicted_pairs": 315623,
+  "true_positive": 315550,
+  "false_positive": 73,
+  "false_negative": 778,
+  "precision": 0.999768711405696,
+  "recall": 0.9975405275536785,
+  "f1": 0.9986533766067306,
+  "recall_by_category": {
+    "amount_diff": 0.9409,
+    "batch": 0.9057,
+    "exact": 1.0,
+    "ref_garbled": 1.0,
+    "ref_missing": 0.9987
+  },
+  "pairs_by_category": {
+    "amount_diff": 6241,
+    "batch": 3903,
+    "exact": 238758,
+    "ref_garbled": 36883,
+    "ref_missing": 30543
+  },
+  "precision_by_tier": {
+    "T1 exact amount + exact reference": 1.0,
+    "T2 exact amount + similar reference": 0.9998,
+    "T3 exact amount + unique pairing": 1.0,
+    "T4a amount within tolerance + exact reference": 1.0,
+    "T4b amount within tolerance + similar reference (unique)": 1.0,
+    "T4c amount within tolerance + unique pairing (no usable reference)": 0.8187,
+    "T5 batched deposit (many-to-one)": 0.9997
+  },
+  "pairs_by_tier": {
+    "T1 exact amount + exact reference": 249817,
+    "T2 exact amount + similar reference": 25828,
+    "T3 exact amount + unique pairing": 30502,
+    "T4a amount within tolerance + exact reference": 5158,
+    "T4b amount within tolerance + similar reference (unique)": 407,
+    "T4c amount within tolerance + unique pairing (no usable reference)": 375,
+    "T5 batched deposit (many-to-one)": 3536
+  },
+  "ledger_leftover_confusion": {
+    "Outstanding (timing) | truth=gl_only_error": 143,
+    "Outstanding (timing) | truth=not_in_truth_gl_only": 34,
+    "Outstanding (timing) | truth=timing_outstanding": 489,
+    "Unmatched - investigate | truth=gl_only_error": 3650,
+    "Unmatched - investigate | truth=not_in_truth_gl_only": 691
+  },
+  "bank_leftover_confusion": {
+    "Bank charge - not booked | truth=bank_charge": 2058,
+    "Interest - not booked | truth=interest": 178,
+    "Unidentified bank item | truth=not_in_truth_bank_only": 503,
+    "Unidentified bank item | truth=unidentified_deposit": 328
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "origins": {
+    "2025-03-31": {
+      "wape_model": 0.1533282179486591,
+      "wape_baseline": 0.6050837625789784,
+      "volume_bias_model": 0.014499931957283607,
+      "volume_bias_baseline": 0.18612082676858144,
+      "actual_collected_eur": 13368017.81301336
+    },
+    "2025-06-30": {
+      "wape_model": 0.13733295044994168,
+      "wape_baseline": 0.6146624072546761,
+      "volume_bias_model": 0.012735212550474495,
+      "volume_bias_baseline": 0.19524795691876617,
+      "actual_collected_eur": 14411959.51752364
+    },
+    "2025-09-30": {
+      "wape_model": 0.14208813643789825,
+      "wape_baseline": 0.6308815966820508,
+      "volume_bias_model": 0.01266195002150794,
+      "volume_bias_baseline": 0.21474819042913196,
+      "actual_collected_eur": 14455434.8612876
+    }
+  },
+  "pooled": {
+    "wape_model": 0.1440231492069856,
+    "wape_baseline": 0.6171818083472418,
+    "volume_bias_model": 0.013268692812194338,
+    "volume_bias_baseline": 0.19903323350452617,
+    "wape_improvement_vs_baseline": 0.7666438847368706
+  },
+  "by_entity_wape": {
+    "E01": {
+      "model": 0.1266720064212323,
+      "baseline": 0.5545963464184311
+    },
+    "E02": {
+      "model": 0.14150439765158823,
+      "baseline": 0.5671413238148719
+    },
+    "E03": {
+      "model": 0.20585951809898617,
+      "baseline": 0.984624787723571
+    },
+    "E04": {
+      "model": 0.13202451956302944,
+      "baseline": 0.556851258063734
+    },
+    "E05": {
+      "model": 0.13483038738623376,
+      "baseline": 0.5214328101215976
+    }
+  }
+}
