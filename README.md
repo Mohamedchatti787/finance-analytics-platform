@@ -181,13 +181,6 @@ tests/                     unit, integration, DAX contract and mutation tests
 .github/workflows/ci.yml   clean build at 20 % scale + full test suite on every push
 ```
 
-## Why these design choices
-
-* **dbt + DuckDB:** zero-setup, fast, and a reviewer can reproduce every number in a minute. The SQL is plain enough to port to Snowflake/BigQuery/Postgres with small changes (a few DuckDB functions such as `generate_series` and `last_day` would need translating).
-* **Integer cents for money:** journals balance exactly; there is no floating-point drift in the controls.
-* **Quarantine, don't delete or silently include:** an unbalanced journal is held out of every report and listed in `fct_journal_exceptions`, and a test proves no ledger line can vanish.
-* **A second, independent implementation of the KPIs** (pandas straight from raw files) so the dbt marts are checked against something that shares none of their code.
-* **Mutation tests** because a control that has never been seen to fail is only a hope.
 
 ## License
 
